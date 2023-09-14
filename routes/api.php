@@ -19,9 +19,15 @@ use Illuminate\Support\Facades\Route;
 Route::middleware(['auth:sanctum'])->group(function () {
     Route::get('/loggeduser', [UserController::class, 'loggeduser']);
     Route::get('/logout', [UserController::class, 'logout']);
+    Route::get('/users', [UserController::class, 'getAllUsers']);
+    Route::get('/allTickets', [TicketController::class, 'getAllTicket']);
+    Route::post('/update-user-id', [TicketController::class, 'updateTicketsUserId']);
+    Route::get('/view',[TicketController::class, 'ticketView']);
+    Route::post('/reassign',[TicketController::class, 'Reassign']);
+    Route::post('/tickets-update', [TicketController::class, 'updateMainComments']);
 });
-Route::get('/view',[TicketController::class, 'ticketView']);
+
 Route::post('/upload-csv',[TicketController::class, 'uploadCsv']);
 Route::get('/tickets-delete_all', [TicketController::class, 'deleteAll']);
-Route::post('/tickets-update', [TicketController::class, 'updateMainComments']);
+
 Route::post('/login', [UserController::class, 'login']);

@@ -8,9 +8,16 @@ use Illuminate\Http\Request;
 class TicketController extends Controller			
 {			
     public function ticketView()			
-    {			
-        $ticket = Ticket::all();			
-        return response()->json(['data' => $ticket,	 'status' => 'success',	 'message' => 'Data get successfully'],	 200);
+    {
+        $loggeduser = auth()->user();
+        if($loggeduser->role === 'admin'){
+            $ticket = Ticket::all();
+        }
+        else{
+            $ticket = Ticket::where('user_id', $loggeduser->id)->get();
+        }
+    			
+        return response()->json(['user' => $loggeduser ,'data' => $ticket,	 'status' => 'success',	 'message' => 'Data get successfully'],	 200);
     }			
     public function deleteAll(Request $request)			
     {			
@@ -43,8 +50,8 @@ class TicketController extends Controller
                     'liveLayer_or_expected_sl' => empty($row[5]) ? '' : $row[5],		
                     'direction' => empty($row[6]) ? '' : $row[6],			
                     'end_location' => empty($row[7]) ? '' : $row[7],			
-                    'comments' => empty($row[8]) ? '' : $row[8],			
-                    'fc' => empty($row[9]) ? '' : $row[9],			
+                    'comments' => empty($row[8]) ? '' : $row[8],		
+                    'fc' => empty($row[9]) ? '' : $row[9],				
                     'time' => empty($row[10]) ? '' : $row[10],			
                     'country' => empty($row[11]) ? '' : $row[11],			
                     'road_type' => empty($row[12]) ? '' : $row[12],			
@@ -57,11 +64,11 @@ class TicketController extends Controller
                     'do_comments_observation' => empty($row[19]) ? '' : $row[19],			
                     'topology_id' => empty($row[20]) ? '' : $row[20],			
                     'logical_sign_id' => empty($row[21]) ? '' : $row[21],			
-                    'observed_speedlimit' => empty($row[22]) ? '' : $row[22],			
+                    'observed_speedlimit' => empty($row[22]) ? '' : $row[22],
                     'expected_speedlimit' => empty($row[23]) ? '' : $row[23],			
                     'dO_comment_expected' => empty($row[24]) ? '' : $row[24],			
-                    'error_description' => empty($row[25]) ? '' : $row[25],			
-                    'scl20_cat' => empty($row[26]) ? '' : $row[26],			
+                    'scl20_cat' => empty($row[26]) ? '' : $row[26],				
+                    'error_description' => empty($row[25]) ? '' : $row[25],		
                     'scl20_err_cat' => empty($row[27]) ? '' : $row[27],			
                     'scl20_sub_cat' => empty($row[28]) ? '' : $row[28],			
                 ]);			
@@ -75,7 +82,7 @@ class TicketController extends Controller
 			
     public function updateMainComments(Request $request)		
     {			
-        
+        $loggeduser = auth()->user();
 
             try {
                 $validatedData = $request->validate([
@@ -89,6 +96,8 @@ class TicketController extends Controller
                     'dO_comment_expected' => 'required',
                     'error_description' => 'required',
                 ]);
+                $validatedData['assignee'] = $loggeduser->name; 
+                $validatedData['isComplete'] = true;    
                 $ticket = Ticket::findOrFail($request->id);
     
                 // Retrieve the previous images URLs from the database and decode them from JSON to an array
@@ -105,5 +114,39 @@ class TicketController extends Controller
                 // Other exceptions occurred
                 return response()->json(['status' => 'failed', 'message' => $th->getMessage()], 200);
             }
-    }			
+    }		
+    public function getAllTicket()
+    {
+        $tickets = Ticket::where('isAvtive', true)->get();
+        return response()->json(['ticket' => $tickets], 200);
+    }	
+
+    public function updateTicketsUserId(Request $request)
+    {
+       try {
+        $userId = $request->input('userSelectedid');
+       $ticketIds = $request->input('TicketsIds');
+
+      // Update user_id in the tickets table
+      Ticket::whereIn('unique_id', $ticketIds)->update(['user_id' => $userId, 'isAvtive' => false]);
+
+      return response()->json(['status' => 'success', 'message' => 'Data updated successfully'], 200);
+       } catch (\Throwable $th) {
+        return response()->json(['status' => 'failed', 'message' => $th->getMessage()], 200);
+       }
+    }
+
+
+    public function Reassign(Request $request){
+        try {
+            $userId = $request->input('id');
+    
+          // Update user_id in the tickets table
+          Ticket::where('unique_id', $userId)->update(['isComplete' => false]);
+    
+          return response()->json(['data' => $userId ,'status' => 'success', 'message' => 'unique id ' .$userId.' Reassign Successfully'], 200);
+           } catch (\Throwable $th) {
+            return response()->json(['status' => 'failed', 'message' => $th->getMessage()], 200);
+           }
+    }
 }			

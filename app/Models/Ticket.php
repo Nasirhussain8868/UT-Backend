@@ -38,6 +38,8 @@ class Ticket extends Model
         'scl20_cat',		
         'scl20_err_cat',			
         'scl20_sub_cat',			
-        'isAvtive',			
+        'isAvtive',
+        'user_id',
+        'isComplete',	
     ];			
 }			

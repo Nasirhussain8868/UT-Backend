@@ -45,7 +45,8 @@ return new class extends Migration
             $table->string('scl20_err_cat')->nullable();			
             $table->string('scl20_sub_cat')->nullable();			
             $table->timestamps();			
-            $table->boolean(('isAvtive'))->default(true);			
+            $table->boolean(('isAvtive'))->default(true);
+            		
         });			
     }			
 			
